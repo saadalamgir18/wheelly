@@ -2,11 +2,16 @@ package com.saad.wheelly.model;
 
 import com.saad.wheelly.model.enums.RoleType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.Collection;
 
 @Entity
-
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Roles extends BaseModel {
 
     @Enumerated(EnumType.STRING)
