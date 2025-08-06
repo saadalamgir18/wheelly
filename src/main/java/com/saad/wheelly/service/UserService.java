@@ -1,13 +1,13 @@
 package com.saad.wheelly.service;
 
 
-import com.saad.wheelly.dto.request.UserRequestDto;
-import com.saad.wheelly.dto.response.UserResponseDto;
-import jakarta.validation.Valid;
+import com.saad.wheelly.dto.request.UserRegistrationRequestDto;
+import com.saad.wheelly.dto.response.UserLoginResponse;
+import com.saad.wheelly.dto.response.UserRegistrationResponseDto;
 
 public interface UserService {
-    UserResponseDto save(UserRequestDto request);
-    UserResponseDto findUser(String email);
+    UserRegistrationResponseDto save(UserRegistrationRequestDto request);
+    UserLoginResponse login(String email, String password);
     void delete(Long id);
-    UserResponseDto update(Long id,  UserRequestDto request);
+    UserRegistrationResponseDto update(Long id, UserRegistrationRequestDto request);
 }

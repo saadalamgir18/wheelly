@@ -2,9 +2,7 @@ package com.saad.wheelly.model;
 
 import com.saad.wheelly.model.enums.RoleType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Collection;
 
@@ -12,10 +10,13 @@ import java.util.Collection;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Roles extends BaseModel {
 
     @Enumerated(EnumType.STRING)
     private RoleType name;
+
     @ManyToMany(mappedBy = "user_roles")
     private Collection<WheellyUsers> users;
 

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 @Builder
-public record UserRequestDto(
+public record UserRegistrationRequestDto(
         @NotBlank(message = "First name is required")
         String firstName,
         @NotBlank(message = "Last name is required")

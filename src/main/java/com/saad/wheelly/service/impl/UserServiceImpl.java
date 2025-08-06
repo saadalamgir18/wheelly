@@ -1,19 +1,24 @@
 package com.saad.wheelly.service.impl;
 
-import com.saad.wheelly.dto.request.UserRequestDto;
-import com.saad.wheelly.dto.response.UserResponseDto;
-import com.saad.wheelly.exceptions.AlreadyExistsException;
+import com.saad.wheelly.dto.request.UserRegistrationRequestDto;
+import com.saad.wheelly.dto.response.UserLoginResponse;
+import com.saad.wheelly.dto.response.UserRegistrationResponseDto;
 import com.saad.wheelly.model.Roles;
 import com.saad.wheelly.model.WheellyUsers;
 import com.saad.wheelly.model.enums.RoleType;
+import com.saad.wheelly.repository.RoleRepository;
 import com.saad.wheelly.repository.UserRepository;
 import com.saad.wheelly.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.management.relation.Role;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,40 +26,59 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    private final AuthenticationManager authenticationManager;
+
     @Override
-    public UserResponseDto save(UserRequestDto request) {
+    public UserRegistrationResponseDto save(UserRegistrationRequestDto request) {
        log.debug("coming request: {}" , request);
-        WheellyUsers user = userRepository.findWheellyUsersByEmail(request.email());
-        if (user != null) {
+        Optional<WheellyUsers> user = userRepository.findWheellyUsersByEmail(request.email());
+        if (user.isPresent()) {
+            throw new IllegalStateException("User already exists with email: " + request.email());
+        }
 
-            log.debug("user already exists with email or username: {}, {}", user.getEmail(), user.getUserName());
 
-            throw new AlreadyExistsException("user already exists with email or username");
+        Roles customerRole = roleRepository.findByName(RoleType.ROLE_CUSTOMER).orElseThrow(()-> new IllegalStateException("Customer role not set."));
 
-        }else {
-            Roles roles = Roles.builder()
-                    .name(RoleType.ROLE_CUSTOMER)
-                    .build();
             WheellyUsers newUser = WheellyUsers.builder()
                     .firstName(request.firstName())
                     .lastName(request.lastName())
                     .userName(request.userName())
                     .email(request.email())
-                    .password(request.password())
-                    .user_roles(List.of(roles))
+                    .password(passwordEncoder.encode(request.password()))
+                    .user_roles(List.of(customerRole))
                     .build();
 
             WheellyUsers dbUser =  userRepository.save(newUser);
 
             log.debug("saved user: {}", dbUser);
 
-            return UserResponseDto.toWheellyUsers(dbUser);
-        }
+            return UserRegistrationResponseDto.toWheellyUsers(dbUser);
+
 
     }
 
     @Override
-    public UserResponseDto findUser(String email) {
+    public UserLoginResponse login(String email, String password) {
+
+
+        WheellyUsers user = userRepository.findWheellyUsersByEmail(email).orElseThrow( () -> {
+
+            log.debug("user already exists with email or username: {}", email);
+
+            return new IllegalStateException("User not found with email: " + email);
+        });
+
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        if (authentication.isAuthenticated()) {
+            System.out.println(authentication.getPrincipal().toString());
+            UserLoginResponse.builder()
+                    .token(user.getEmail())
+                    .build();
+        }
+
         return null;
     }
 
@@ -64,7 +88,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDto update(Long id, UserRequestDto request) {
+    public UserRegistrationResponseDto update(Long id, UserRegistrationRequestDto request) {
         return null;
     }
 }

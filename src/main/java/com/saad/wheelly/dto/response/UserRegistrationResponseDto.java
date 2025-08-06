@@ -5,7 +5,7 @@ import com.saad.wheelly.model.enums.Gender;
 import lombok.Builder;
 
 @Builder
-public record UserResponseDto(
+public record UserRegistrationResponseDto(
         String firstName,
         String lastName,
         String userName,
@@ -14,8 +14,8 @@ public record UserResponseDto(
         int age,
         Gender gender
 ) {
-    public static UserResponseDto toWheellyUsers(WheellyUsers users) {
-        return UserResponseDto.builder()
+    public static UserRegistrationResponseDto toWheellyUsers(WheellyUsers users) {
+        return UserRegistrationResponseDto.builder()
                 .firstName(users.getFirstName())
                 .lastName(users.getLastName())
                 .userName(users.getUserName())
