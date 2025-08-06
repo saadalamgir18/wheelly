@@ -8,12 +8,15 @@ import com.saad.wheelly.model.WheellyUsers;
 import com.saad.wheelly.model.enums.RoleType;
 import com.saad.wheelly.repository.RoleRepository;
 import com.saad.wheelly.repository.UserRepository;
+import com.saad.wheelly.securityconfig.JwtService;
 import com.saad.wheelly.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
+
+    private final JwtService jwtService;
 
     @Override
     public UserRegistrationResponseDto save(UserRegistrationRequestDto request) {
@@ -63,19 +68,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserLoginResponse login(String email, String password) {
 
-
-        WheellyUsers user = userRepository.findWheellyUsersByEmail(email).orElseThrow( () -> {
+        userRepository.findWheellyUsersByEmail(email).orElseThrow( () -> {
 
             log.debug("user already exists with email or username: {}", email);
 
-            return new IllegalStateException("User not found with email: " + email);
+             throw new IllegalStateException("User found with email: " + email);
         });
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         if (authentication.isAuthenticated()) {
-            System.out.println(authentication.getPrincipal().toString());
-            UserLoginResponse.builder()
-                    .token(user.getEmail())
+            log.info("user logged in successfully");
+
+            UserDetails user = (UserDetails) authentication.getPrincipal();
+
+            List<String> roles = user.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .toList();
+
+            log.info("user roles: {}", roles);
+
+            String token  = jwtService.generateJwtToken(user.getUsername(), roles);
+
+            return UserLoginResponse.builder()
+                    .token(token)
                     .build();
         }
 

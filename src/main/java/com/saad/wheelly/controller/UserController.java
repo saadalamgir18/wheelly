@@ -8,6 +8,7 @@ import com.saad.wheelly.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,8 @@ public class UserController {
     public ResponseEntity<UserLoginResponse> login(@RequestBody @Valid UserLoginRequest request) {
         log.info("login request: {}", request);
         UserLoginResponse response = userService.login(request.email(), request.password());
-        return  ResponseEntity.status(HttpStatus.OK).body(response);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + response.token());
+        return  new ResponseEntity(response,headers,HttpStatus.OK);
     }
 }

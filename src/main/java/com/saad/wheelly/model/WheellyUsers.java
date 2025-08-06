@@ -33,7 +33,7 @@ public class WheellyUsers extends BaseModel {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(

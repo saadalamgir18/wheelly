@@ -20,7 +20,7 @@ public class Roles extends BaseModel {
     @ManyToMany(mappedBy = "user_roles")
     private Collection<WheellyUsers> users;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "roles_privileges",
             joinColumns = @JoinColumn(
